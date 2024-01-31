@@ -6,6 +6,7 @@ import getUserById from "../controllers/users/getUserById.js";
 import getEventsByUserId from "../controllers/events/getEventsByUserId.js";
 import createUser from "../controllers/users/createUser.js";
 import updateUser from "../controllers/users/updateUser.js";
+import deleteUser from "../controllers/users/deleteUser.js";
 
 const router = Express.Router();
 
@@ -74,6 +75,22 @@ router.put("/:id", (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Something went wrong by updating user" });
+  }
+});
+
+router.delete("/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const userName = getUserById(id).name;
+    const deletedUser = deleteUser(id);
+    if (!deletedUser) {
+      res.status(404).send({ message: "User not found" });
+    } else {
+      res.status(200).json({ message: `${userName} deleted` });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Something went wrong by deleting user" });
   }
 });
 
