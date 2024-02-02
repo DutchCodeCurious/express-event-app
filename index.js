@@ -9,6 +9,7 @@ import jwtCheck from "./middleware/auth.js";
 import eventsRouter from "./routes/events.js";
 import usersRouter from "./routes/users.js";
 import categoriesRouter from "./routes/categories.js";
+import loginRouter from "./routes/login.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(log);
 app.use("/events", eventsRouter);
 app.use("/users", usersRouter);
 app.use("/categories", categoriesRouter);
+app.use("/login", loginRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
