@@ -1,4 +1,5 @@
 import Express from "express";
+import jwtCheck from "../middleware/auth.js";
 
 // Controllers
 import getEvents from "../controllers/events/getEvents.js";

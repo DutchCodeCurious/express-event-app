@@ -1,10 +1,16 @@
 import express from "express";
+import dotenv from "dotenv";
 
+// Middleware
 import log from "./middleware/logMiddleware.js";
+import jwtCheck from "./middleware/auth.js";
 
+// Routes
 import eventsRouter from "./routes/events.js";
 import usersRouter from "./routes/users.js";
-//import categoriesRouter from "./routes/categories.js";
+import categoriesRouter from "./routes/categories.js";
+
+dotenv.config();
 
 const app = express();
 
@@ -13,7 +19,7 @@ app.use(log);
 
 app.use("/events", eventsRouter);
 app.use("/users", usersRouter);
-//app.use("/categories", categoriesRouter);
+app.use("/categories", categoriesRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
