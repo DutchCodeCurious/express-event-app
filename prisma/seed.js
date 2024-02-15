@@ -21,26 +21,28 @@ async function main() {
     });
   }
 
+  // create categories
+  for (const category of categories) {
+    await prisma.category.upsert({
+      where: { id: category.id },
+      update: {},
+      create: category,
+    });
+  }
+
+  // create events
   for (const event of events) {
     await prisma.event.upsert({
       where: { id: event.id },
       update: {},
       create: {
         ...event,
-        user: {
-          connect: {
-            id: event.createdBy,
-          },
+        startTime: new Date(event.startTime).toISOString(),
+        endTime: new Date(event.endTime).toISOString(),
+        categoryIds: {
+          connect: event.categoryIds.map((id) => ({ id })),
         },
       },
-    });
-  }
-
-  for (const category of categories) {
-    await prisma.category.upsert({
-      where: { id: category.id },
-      update: {},
-      create: category,
     });
   }
 }
