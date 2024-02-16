@@ -1,13 +1,18 @@
 import eventData from "../../data/events.json" assert { type: "json" };
+import { PrismaClient } from "@prisma/client";
+import NotFoundError from "../../errors/NotFoundError.js";
 
-const deleteEventById = (id) => {
-  const index = eventData.events.findIndex((event) => event.id === id);
-
-  if (index === -1) {
-    return null;
+const deleteEventById = async (id) => {
+  const prisma = new PrismaClient();
+  const deleteEvent = await prisma.event.deleteMany({
+    where: {
+      id: id,
+    },
+  });
+  if (!deleteEvent || deleteEvent.count === 0) {
+    throw new NotFoundError("event", id);
   }
 
-  eventData.events.splice(index, 1);
   return id;
 };
 

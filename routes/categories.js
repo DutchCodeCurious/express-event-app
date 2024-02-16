@@ -1,5 +1,5 @@
 import Express from "express";
-
+import notFoundErrorHandler from "../middleware/notFoundErrorHandler.js";
 //controllers
 import getCategories from "../controllers/categories/getCategories.js";
 import getCategoriesById from "../controllers/categories/getCategoriesById.js";
@@ -9,9 +9,10 @@ import deleteCategory from "../controllers/categories/deleteCategory.js";
 
 const router = Express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const categories = getCategories();
+    const categories = await getCategories();
+
     res.status(200).json(categories);
     console.log("Categories sent");
   } catch (error) {
@@ -23,28 +24,24 @@ router.get("/", (req, res) => {
 });
 
 //Make sure you can search for multiple categories id's
-router.get("/:id", (req, res) => {
-  try {
-    const { id } = req.params;
-    const category = getCategoriesById(id);
-
-    if (!category) {
-      res.status(404).send({ message: "Category not found" });
-    } else {
+router.get(
+  "/:id",
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const category = await getCategoriesById(id);
       res.status(200).json(category);
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "Something went wrong by getting category" });
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { name } = req.body;
-    const newCategory = createCategory(name);
+    const newCategory = await createCategory(name);
     res.status(201).json(newCategory);
   } catch (error) {
     console.error(error);
@@ -54,38 +51,27 @@ router.post("/", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-    const updatedCategory = updateCategory(id, name);
+    const updatedCategory = await updateCategory(id, name);
     res.status(200).json(updatedCategory);
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "Something went wrong by updating category" });
+    next(error);
   }
 });
 
 router.delete("/:id", (req, res) => {
   try {
     const { id } = req.params;
-    const category = getCategoriesById(id).name;
     const deletedCategory = deleteCategory(id);
 
-    if (!deletedCategory) {
-      res.status(404).send({ message: "Category not found" });
-    } else {
-      res
-        .status(200)
-        .json({ message: `Category ${category} has been deleted` });
-    }
+    res.status(200).json({
+      message: `Category with id ${id} has been deleted`,
+    });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "Something went wrong by deleting category" });
+    next(error);
   }
 });
 export default router;

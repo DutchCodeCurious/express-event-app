@@ -37,11 +37,12 @@ router.get("/:id", (req, res) => {
   }
 });
 
-router.get("/:id/events", (req, res) => {
+// check of verniewen
+router.get("/:id/events", async (req, res) => {
   try {
     const { id } = req.params;
     const user = getUserById(id);
-    const events = getEventsByUserId(id);
+    const events = await getEventsByUserId(id);
 
     if (!events) {
       res.status(404).send({ message: "Events not found" });

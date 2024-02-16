@@ -1,5 +1,6 @@
 import Express from "express";
 import jwtCheck from "../middleware/auth.js";
+import notFoundErrorHandler from "../middleware/notFoundErrorHandler.js";
 
 // Controllers
 import getEvents from "../controllers/events/getEvents.js";
@@ -10,34 +11,31 @@ import updateEvent from "../controllers/events/updateEvent.js";
 
 const router = Express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const events = getEvents();
+    const events = await getEvents();
     res.status(200).json(events);
-    console.log("Events sent");
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Something went wrong by getting events" });
   }
 });
 
-router.get("/:id", (req, res) => {
-  try {
-    const { id } = req.params;
-    const event = getEventById(id);
-
-    if (!event) {
-      res.status(404).send({ message: "Event not found" });
-    } else {
+router.get(
+  "/:id",
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const event = await getEventById(id);
       res.status(200).json(event);
+    } catch (error) {
+      nextTick(error);
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Something went wrong by getting event" });
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const {
       createdBy,
@@ -49,7 +47,7 @@ router.post("/", (req, res) => {
       startTime,
       endTime,
     } = req.body;
-    const newEvent = createEvent(
+    const newEvent = await createEvent(
       createdBy,
       title,
       description,
@@ -66,7 +64,7 @@ router.post("/", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const {
@@ -79,7 +77,7 @@ router.put("/:id", (req, res) => {
       startTime,
       endTime,
     } = req.body;
-    const updatedEvent = updateEvent(
+    const updatedEvent = await updateEvent(
       id,
       createdBy,
       title,
@@ -93,25 +91,19 @@ router.put("/:id", (req, res) => {
 
     res.status(200).json(updatedEvent);
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Something went wrong by updating event" });
+    next(error);
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const eventName = getEventById(id).title;
-    const deletedEvent = deleteEventById(id);
-
-    if (!deletedEvent) {
-      res.status(404).send({ message: `Event with ${id} not found` });
-    } else {
-      res.status(200).json({ message: `Event ${eventName} deleted` });
-    }
+    const deletedEvent = await deleteEventById(id);
+    res.status(200).json({
+      message: `Event with id: ${id} deleted successfully`,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Something went wrong by deleting event" });
+    next(error);
   }
 });
 

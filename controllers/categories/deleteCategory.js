@@ -1,15 +1,17 @@
 import categorieData from "../../data/categories.json" assert { type: "json" };
+import { PrismaClient } from "@prisma/client";
 
-const deleteCategory = (id) => {
-  const index = categorieData.categories.find((category) => category.id === id);
+const deleteCategory = async (id) => {
+  const prisma = new PrismaClient();
 
-  if (index === -1) {
-    console.log("Null");
-    return null;
+  const deleteCategory = await prisma.category.deleteMany({
+    where: {
+      id: id,
+    },
+  });
+  if (!deleteCategory || deleteCategory.count === 0) {
+    throw new Error("Category not found");
   }
-
-  categorieData.categories.splice(index, 1);
-  console.log(id);
   return id;
 };
 
