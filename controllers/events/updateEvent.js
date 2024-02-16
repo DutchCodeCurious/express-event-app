@@ -14,9 +14,6 @@ const updateEvent = async (
 ) => {
   const prisma = new PrismaClient();
 
-  //startTime = new Date(startTime).toISOString();
-  //endTime = new Date(endTime).toISOString();
-
   const updateEvent = await prisma.event.update({
     where: {
       id: id,

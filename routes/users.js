@@ -1,4 +1,5 @@
 import Express from "express";
+import notFoundErrorHandler from "../middleware/notFoundErrorHandler.js";
 
 // Controllers
 import getUsers from "../controllers/users/getUsers.js";
@@ -10,56 +11,50 @@ import deleteUser from "../controllers/users/deleteUser.js";
 
 const router = Express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const events = getUsers();
+    const events = await getUsers();
     res.status(200).json(events);
-    console.log("Events sent");
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Something went wrong by getting events" });
   }
 });
 
-router.get("/:id", (req, res) => {
-  try {
-    const { id } = req.params;
-    const event = getUserById(id);
-
-    if (!event) {
-      res.status(404).send({ message: "Event not found" });
-    } else {
+router.get(
+  "/:id",
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const event = await getUserById(id);
       res.status(200).json(event);
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Something went wrong by getting event" });
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
 // check of verniewen
-router.get("/:id/events", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = getUserById(id);
-    const events = await getEventsByUserId(id);
+router.get(
+  "/:id/events",
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const events = await getEventsByUserId(id);
 
-    if (!events) {
-      res.status(404).send({ message: "Events not found" });
-    } else {
-      res.status(200).json([user, events]);
-      console.log("Events sent");
+      res.status(200).json(events);
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Something went wrong by getting events" });
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { name, image, password } = req.body;
-    const newUser = createUser(name, image, password);
+    const newUser = await createUser(name, image, password);
     res.status(201).json(newUser);
   } catch (error) {
     console.log(error);
@@ -67,31 +62,26 @@ router.post("/", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, image, password } = req.body;
-    const updatedUser = updateUser(id, name, image, password);
+    const updatedUser = await updateUser(id, name, image, password);
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Something went wrong by updating user" });
+    next(error);
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userName = getUserById(id).name;
-    const deletedUser = deleteUser(id);
-    if (!deletedUser) {
-      res.status(404).send({ message: "User not found" });
-    } else {
-      res.status(200).json({ message: `${userName} deleted` });
-    }
+    const deletedUser = await deleteUser(id);
+    res.status(200).json({
+      message: `User with id ${id} has been deleted successfully!`,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Something went wrong by deleting user" });
+    next(error);
   }
 });
 
