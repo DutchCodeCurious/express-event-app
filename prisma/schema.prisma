@@ -29,12 +29,11 @@ model Event {
   location    String
   user        User       @relation(fields: [createdBy], references: [id])
   createdBy   String
-  categoryIds  Category[]
+  categoryIds Category[]
 }
 
 model Category {
   id      String  @id @default(uuid())
   name    String
-  Event   Event?  @relation(fields: [eventId], references: [id])
-  eventId String?
+  events  Event[]
 }

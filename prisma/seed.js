@@ -40,7 +40,10 @@ async function main() {
         startTime: new Date(event.startTime).toISOString(),
         endTime: new Date(event.endTime).toISOString(),
         categoryIds: {
-          connect: event.categoryIds.map((id) => ({ id })),
+          connect:
+            event.categoryIds.length <= 1
+              ? [{ id: event.categoryIds[0] }]
+              : event.categoryIds.map((id) => ({ id })),
         },
       },
     });
